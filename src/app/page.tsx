@@ -1,6 +1,6 @@
 "use client";
 
-import { ImageGrid } from "@/components/images/ImageGrid";
+import { ImageWorkspace } from "@/components/images/ImageWorkspace";
 import { UploadZone } from "@/components/uploader/UploadZone";
 import { useImages } from "@/hooks/useImages";
 
@@ -9,11 +9,18 @@ export default function Home() {
     images,
     error,
     addImages,
+    removeImage,
+    rotateImage,
+    reorderImages,
+    clearImages,
   } = useImages();
+
+  const hasImages = images.length > 0;
 
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+        {/* Header */}
         <header className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-medium text-primary">
             Image → PDF
@@ -29,20 +36,36 @@ export default function Home() {
           </p>
         </header>
 
-        <section className="mx-auto mt-10 max-w-3xl">
-          <UploadZone onFilesSelected={addImages} />
+        {/* Upload area */}
+        {!hasImages && (
+          <section className="mx-auto mt-10 max-w-3xl">
+            <UploadZone
+              onFilesSelected={addImages}
+            />
+          </section>
+        )}
 
-          {error && (
-            <div
-              role="alert"
-              className="mt-4 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
-            >
-              {error}
-            </div>
-          )}
-        </section>
+        {/* Error */}
+        {error && (
+          <div
+            role="alert"
+            className="mx-auto mt-6 max-w-3xl rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
+          >
+            {error}
+          </div>
+        )}
 
-        <ImageGrid images={images} />
+        {/* Workspace */}
+        {hasImages && (
+          <ImageWorkspace
+            images={images}
+            onFilesSelected={addImages}
+            onRotate={rotateImage}
+            onRemove={removeImage}
+            onReorder={reorderImages}
+            onClear={clearImages}
+          />
+        )}
       </div>
     </main>
   );

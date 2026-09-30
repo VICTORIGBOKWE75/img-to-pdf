@@ -15,6 +15,18 @@ import {
 
 import { calculateImageLayout } from "./layout";
 
+export interface PdfGenerationProgress {
+  current: number;
+  total: number;
+  percentage: number;
+}
+
+interface GeneratePdfOptions extends PdfOptions {
+  onProgress?: (
+    progress: PdfGenerationProgress
+  ) => void;
+}
+
 function getProcessingQuality(
   quality: PdfOptions["quality"]
 ): number {
@@ -48,7 +60,7 @@ async function embedImage(
 
 export async function generatePdf(
   images: ImageItem[],
-  options: PdfOptions
+  options: GeneratePdfOptions
 ): Promise<Blob> {
   if (images.length === 0) {
     throw new Error(
@@ -69,7 +81,17 @@ export async function generatePdf(
     options.quality
   );
 
-  for (const image of images) {
+  const total = images.length;
+
+  options.onProgress?.({
+    current: 0,
+    total,
+    percentage: 0,
+  });
+
+  for (let index = 0; index < images.length; index++) {
+    const image = images[index];
+
     const processed = await processImage(
       image.file,
       {
@@ -105,17 +127,27 @@ export async function generatePdf(
       width: layout.width,
       height: layout.height,
     });
+
+    const current = index + 1;
+
+    options.onProgress?.({
+      current,
+      total,
+      percentage: Math.round(
+        (current / total) * 100
+      ),
+    });
   }
 
   const pdfBytes = await pdf.save();
 
-const pdfBuffer = new ArrayBuffer(
-  pdfBytes.byteLength
-);
+  const pdfBuffer = new ArrayBuffer(
+    pdfBytes.byteLength
+  );
 
-new Uint8Array(pdfBuffer).set(pdfBytes);
+  new Uint8Array(pdfBuffer).set(pdfBytes);
 
-return new Blob([pdfBuffer], {
-  type: "application/pdf",
-});
+  return new Blob([pdfBuffer], {
+    type: "application/pdf",
+  });
 }

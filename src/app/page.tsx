@@ -3,11 +3,13 @@
 import { ImageWorkspace } from "@/components/images/ImageWorkspace";
 import { UploadZone } from "@/components/uploader/UploadZone";
 import { useImages } from "@/hooks/useImages";
+import { usePdfGenerator } from "@/hooks/usePdfGenerator";
+import { downloadPdf } from "@/lib/pdf";
 
 export default function Home() {
   const {
     images,
-    error,
+    error: imageError,
     addImages,
     removeImage,
     rotateImage,
@@ -15,12 +17,36 @@ export default function Home() {
     clearImages,
   } = useImages();
 
+  const {
+    isConverting,
+    progress,
+    error: pdfError,
+    generate,
+    reset,
+  } = usePdfGenerator();
+
   const hasImages = images.length > 0;
+
+  async function handleConvert() {
+    const blob = await generate(images);
+
+    if (!blob) {
+      return;
+    }
+
+    downloadPdf(blob);
+  }
+
+  function handleClear() {
+    clearImages();
+    reset();
+  }
+
+  const error = imageError ?? pdfError;
 
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-        {/* Header */}
         <header className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-medium text-primary">
             Image → PDF
@@ -31,12 +57,12 @@ export default function Home() {
           </h1>
 
           <p className="mt-4 text-muted-foreground">
-            Convert your images to a PDF directly in your
-            browser. Your images never leave your device.
+            Convert your images to a PDF directly in
+            your browser. Your images never leave your
+            device.
           </p>
         </header>
 
-        {/* Upload area */}
         {!hasImages && (
           <section className="mx-auto mt-10 max-w-3xl">
             <UploadZone
@@ -45,7 +71,6 @@ export default function Home() {
           </section>
         )}
 
-        {/* Error */}
         {error && (
           <div
             role="alert"
@@ -55,7 +80,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* Workspace */}
         {hasImages && (
           <ImageWorkspace
             images={images}
@@ -63,7 +87,10 @@ export default function Home() {
             onRotate={rotateImage}
             onRemove={removeImage}
             onReorder={reorderImages}
-            onClear={clearImages}
+            onClear={handleClear}
+            isConverting={isConverting}
+            progress={progress}
+            onConvert={handleConvert}
           />
         )}
       </div>

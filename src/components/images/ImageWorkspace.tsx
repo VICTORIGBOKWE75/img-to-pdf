@@ -5,14 +5,22 @@ import { useRef } from "react";
 import type { ImageItem } from "@/types/image";
 
 import { ImageGrid } from "./ImageGrid";
+import { ConvertButton } from "@/components/pdf/ConvertButton";
 
 interface ImageWorkspaceProps {
   images: ImageItem[];
   onFilesSelected: (files: File[]) => void;
   onRotate: (id: string) => void;
   onRemove: (id: string) => void;
-  onReorder: (activeId: string, overId: string) => void;
+  onReorder: (
+    activeId: string,
+    overId: string
+  ) => void;
   onClear: () => void;
+
+  isConverting: boolean;
+  progress: number;
+  onConvert: () => void;
 }
 
 export function ImageWorkspace({
@@ -22,6 +30,9 @@ export function ImageWorkspace({
   onRemove,
   onReorder,
   onClear,
+  isConverting,
+  progress,
+  onConvert,
 }: ImageWorkspaceProps) {
   const fileInputRef =
     useRef<HTMLInputElement>(null);
@@ -41,7 +52,6 @@ export function ImageWorkspace({
 
     onFilesSelected(Array.from(files));
 
-    // Allow selecting the same file again.
     event.target.value = "";
   }
 
@@ -50,7 +60,6 @@ export function ImageWorkspace({
 
   return (
     <section className="mt-10">
-      {/* Hidden file input for "Add Images" */}
       <input
         ref={fileInputRef}
         type="file"
@@ -60,7 +69,6 @@ export function ImageWorkspace({
         onChange={handleFileChange}
       />
 
-      {/* Workspace header */}
       <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-xl font-semibold">
@@ -76,7 +84,8 @@ export function ImageWorkspace({
           <button
             type="button"
             onClick={openFilePicker}
-            className="rounded-lg border px-4 py-2 text-sm font-medium transition hover:bg-muted"
+            disabled={isConverting}
+            className="rounded-lg border px-4 py-2 text-sm font-medium transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
           >
             + Add Images
           </button>
@@ -84,19 +93,26 @@ export function ImageWorkspace({
           <button
             type="button"
             onClick={onClear}
-            className="rounded-lg border px-4 py-2 text-sm font-medium text-destructive transition hover:bg-destructive/10"
+            disabled={isConverting}
+            className="rounded-lg border px-4 py-2 text-sm font-medium text-destructive transition hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Clear All
           </button>
         </div>
       </div>
 
-      {/* Image grid */}
       <ImageGrid
         images={images}
         onRotate={onRotate}
         onRemove={onRemove}
         onReorder={onReorder}
+      />
+
+      <ConvertButton
+        isConverting={isConverting}
+        progress={progress}
+        disabled={images.length === 0}
+        onClick={onConvert}
       />
     </section>
   );

@@ -1,7 +1,18 @@
 export { generatePdf } from "./generate";
-export { DEFAULT_PDF_OPTIONS } from "./options";
+
+export {
+  DEFAULT_PDF_OPTIONS,
+} from "./options";
+
 export {
   getPageDimensions,
   mmToPoints,
 } from "./dimensions";
-export { calculateImageLayout } from "./layout";
+
+export {
+  calculateImageLayout,
+} from "./layout";
+
+export {
+  downloadPdf,
+} from "./download";

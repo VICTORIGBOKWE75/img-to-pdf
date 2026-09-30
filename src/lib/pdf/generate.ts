@@ -1,0 +1,121 @@
+import {
+  PDFDocument,
+  type PDFImage,
+} from "pdf-lib";
+
+import type { ImageItem } from "@/types/image";
+import type { PdfOptions } from "@/types/pdf";
+
+import { processImage } from "@/lib/image/process";
+
+import {
+  getPageDimensions,
+  mmToPoints,
+} from "./dimensions";
+
+import { calculateImageLayout } from "./layout";
+
+function getProcessingQuality(
+  quality: PdfOptions["quality"]
+): number {
+  switch (quality) {
+    case "small":
+      return 0.7;
+
+    case "high":
+      return 0.95;
+
+    case "balanced":
+    default:
+      return 0.9;
+  }
+}
+
+async function embedImage(
+  pdf: PDFDocument,
+  blob: Blob
+): Promise<PDFImage> {
+  const bytes = new Uint8Array(
+    await blob.arrayBuffer()
+  );
+
+  if (blob.type === "image/png") {
+    return pdf.embedPng(bytes);
+  }
+
+  return pdf.embedJpg(bytes);
+}
+
+export async function generatePdf(
+  images: ImageItem[],
+  options: PdfOptions
+): Promise<Blob> {
+  if (images.length === 0) {
+    throw new Error(
+      "At least one image is required to generate a PDF."
+    );
+  }
+
+  const pdf = await PDFDocument.create();
+
+  const pageDimensions = getPageDimensions(
+    options.pageSize,
+    options.orientation
+  );
+
+  const margin = mmToPoints(options.margin);
+
+  const quality = getProcessingQuality(
+    options.quality
+  );
+
+  for (const image of images) {
+    const processed = await processImage(
+      image.file,
+      {
+        rotation: image.rotation,
+        outputType: "image/jpeg",
+        quality,
+      }
+    );
+
+    const embeddedImage = await embedImage(
+      pdf,
+      processed.blob
+    );
+
+    const page = pdf.addPage([
+      pageDimensions.width,
+      pageDimensions.height,
+    ]);
+
+    const layout = calculateImageLayout(
+      pageDimensions,
+      {
+        width: embeddedImage.width,
+        height: embeddedImage.height,
+      },
+      margin,
+      options.imageFit
+    );
+
+    page.drawImage(embeddedImage, {
+      x: layout.x,
+      y: layout.y,
+      width: layout.width,
+      height: layout.height,
+    });
+  }
+
+  const pdfBytes = await pdf.save();
+
+const pdfBuffer = new ArrayBuffer(
+  pdfBytes.byteLength
+);
+
+new Uint8Array(pdfBuffer).set(pdfBytes);
+
+return new Blob([pdfBuffer], {
+  type: "application/pdf",
+});
+}

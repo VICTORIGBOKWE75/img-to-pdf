@@ -3,6 +3,8 @@
 import { useCallback, useState } from "react";
 
 import type { ImageItem } from "@/types/image";
+import type { PdfOptions } from "@/types/pdf";
+
 import {
   DEFAULT_PDF_OPTIONS,
   generatePdf,
@@ -13,7 +15,10 @@ interface UsePdfGeneratorResult {
   progress: number;
   error: string | null;
   pdfBlob: Blob | null;
-  generate: (images: ImageItem[]) => Promise<Blob | null>;
+  generate: (
+    images: ImageItem[],
+    options?: PdfOptions
+  ) => Promise<Blob | null>;
   reset: () => void;
 }
 
@@ -32,7 +37,8 @@ export function usePdfGenerator(): UsePdfGeneratorResult {
 
   const generate = useCallback(
     async (
-      images: ImageItem[]
+      images: ImageItem[],
+      options: PdfOptions = DEFAULT_PDF_OPTIONS
     ): Promise<Blob | null> => {
       if (images.length === 0) {
         setError(
@@ -51,7 +57,7 @@ export function usePdfGenerator(): UsePdfGeneratorResult {
         const blob = await generatePdf(
           images,
           {
-            ...DEFAULT_PDF_OPTIONS,
+            ...options,
 
             onProgress: ({
               percentage,

@@ -5,7 +5,14 @@ interface ImageDimensions {
   height: number;
 }
 
-interface PageLayout {
+export interface PageLayout {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface ContentArea {
   x: number;
   y: number;
   width: number;
@@ -56,6 +63,30 @@ export function calculateImageLayout(
   return {
     x,
     y,
+    width,
+    height,
+  };
+}
+
+export function getContentArea(
+  page: ImageDimensions,
+  margin: number
+): ContentArea {
+  const width =
+    page.width - margin * 2;
+
+  const height =
+    page.height - margin * 2;
+
+  if (width <= 0 || height <= 0) {
+    throw new Error(
+      "Margins are too large for the selected page size."
+    );
+  }
+
+  return {
+    x: margin,
+    y: margin,
     width,
     height,
   };

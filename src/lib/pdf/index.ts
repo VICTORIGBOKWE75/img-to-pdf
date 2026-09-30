@@ -11,6 +11,7 @@ export {
 
 export {
   calculateImageLayout,
+  getContentArea,
 } from "./layout";
 
 export {

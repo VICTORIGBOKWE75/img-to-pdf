@@ -1,6 +1,11 @@
 import {
   PDFDocument,
   type PDFImage,
+  clip,
+  endPath,
+  popGraphicsState,
+  pushGraphicsState,
+  rectangle,
 } from "pdf-lib";
 
 import type { ImageItem } from "@/types/image";
@@ -13,7 +18,10 @@ import {
   mmToPoints,
 } from "./dimensions";
 
-import { calculateImageLayout } from "./layout";
+import {
+  calculateImageLayout,
+  getContentArea,
+} from "./layout";
 
 export interface PdfGenerationProgress {
   current: number;
@@ -89,7 +97,11 @@ export async function generatePdf(
     percentage: 0,
   });
 
-  for (let index = 0; index < images.length; index++) {
+  for (
+    let index = 0;
+    index < images.length;
+    index++
+  ) {
     const image = images[index];
 
     const processed = await processImage(
@@ -121,12 +133,35 @@ export async function generatePdf(
       options.imageFit
     );
 
+    if (options.imageFit === "fill") {
+      const contentArea = getContentArea(
+        pageDimensions,
+        margin
+      );
+
+      page.pushOperators(
+        pushGraphicsState(),
+        rectangle(
+          contentArea.x,
+          contentArea.y,
+          contentArea.width,
+          contentArea.height
+        ),
+        clip(),
+        endPath()
+      );
+    }
+
     page.drawImage(embeddedImage, {
       x: layout.x,
       y: layout.y,
       width: layout.width,
       height: layout.height,
     });
+
+    if (options.imageFit === "fill") {
+      page.pushOperators(popGraphicsState());
+    }
 
     const current = index + 1;
 

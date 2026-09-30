@@ -1,10 +1,16 @@
 "use client";
 
+import { useState } from "react";
+
 import { ImageWorkspace } from "@/components/images/ImageWorkspace";
 import { UploadZone } from "@/components/uploader/UploadZone";
 import { useImages } from "@/hooks/useImages";
 import { usePdfGenerator } from "@/hooks/usePdfGenerator";
-import { downloadPdf } from "@/lib/pdf";
+import {
+  DEFAULT_PDF_OPTIONS,
+  downloadPdf,
+} from "@/lib/pdf";
+import type { PdfOptions } from "@/types/pdf";
 
 export default function Home() {
   const {
@@ -25,10 +31,18 @@ export default function Home() {
     reset,
   } = usePdfGenerator();
 
+  const [pdfOptions, setPdfOptions] =
+    useState<PdfOptions>(
+      DEFAULT_PDF_OPTIONS
+    );
+
   const hasImages = images.length > 0;
 
   async function handleConvert() {
-    const blob = await generate(images);
+    const blob = await generate(
+      images,
+      pdfOptions
+    );
 
     if (!blob) {
       return;
@@ -42,7 +56,8 @@ export default function Home() {
     reset();
   }
 
-  const error = imageError ?? pdfError;
+  const error =
+    imageError ?? pdfError;
 
   return (
     <main className="min-h-screen bg-background">
@@ -88,6 +103,8 @@ export default function Home() {
             onRemove={removeImage}
             onReorder={reorderImages}
             onClear={handleClear}
+            pdfOptions={pdfOptions}
+            onPdfOptionsChange={setPdfOptions}
             isConverting={isConverting}
             progress={progress}
             onConvert={handleConvert}

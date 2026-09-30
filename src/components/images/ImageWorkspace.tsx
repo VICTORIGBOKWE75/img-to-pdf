@@ -3,9 +3,11 @@
 import { useRef } from "react";
 
 import type { ImageItem } from "@/types/image";
+import type { PdfOptions } from "@/types/pdf";
 
 import { ImageGrid } from "./ImageGrid";
 import { ConvertButton } from "@/components/pdf/ConvertButton";
+import { PdfSettings } from "@/components/pdf/PdfSettings";
 
 interface ImageWorkspaceProps {
   images: ImageItem[];
@@ -17,6 +19,11 @@ interface ImageWorkspaceProps {
     overId: string
   ) => void;
   onClear: () => void;
+
+  pdfOptions: PdfOptions;
+  onPdfOptionsChange: (
+    options: PdfOptions
+  ) => void;
 
   isConverting: boolean;
   progress: number;
@@ -30,6 +37,8 @@ export function ImageWorkspace({
   onRemove,
   onReorder,
   onClear,
+  pdfOptions,
+  onPdfOptionsChange,
   isConverting,
   progress,
   onConvert,
@@ -106,6 +115,12 @@ export function ImageWorkspace({
         onRotate={onRotate}
         onRemove={onRemove}
         onReorder={onReorder}
+      />
+
+      <PdfSettings
+        options={pdfOptions}
+        onChange={onPdfOptionsChange}
+        disabled={isConverting}
       />
 
       <ConvertButton

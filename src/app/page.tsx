@@ -1,15 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { ImageWorkspace } from "@/components/images/ImageWorkspace";
 import { UploadZone } from "@/components/uploader/UploadZone";
+
 import { useImages } from "@/hooks/useImages";
 import { usePdfGenerator } from "@/hooks/usePdfGenerator";
+
 import {
   DEFAULT_PDF_OPTIONS,
   downloadPdf,
 } from "@/lib/pdf";
+
 import type { PdfOptions } from "@/types/pdf";
 
 export default function Home() {
@@ -27,6 +30,7 @@ export default function Home() {
     isConverting,
     progress,
     error: pdfError,
+    pdfBlob,
     generate,
     reset,
   } = usePdfGenerator();
@@ -38,22 +42,37 @@ export default function Home() {
 
   const hasImages = images.length > 0;
 
+  useEffect(() => {
+    reset();
+  }, [images, pdfOptions, reset]);
+
   async function handleConvert() {
-    const blob = await generate(
+    await generate(
       images,
       pdfOptions
     );
+  }
 
-    if (!blob) {
+  function handleDownload() {
+    if (!pdfBlob) {
       return;
     }
 
-    downloadPdf(blob);
+    downloadPdf(pdfBlob);
   }
 
   function handleClear() {
     clearImages();
     reset();
+  }
+
+  function handleCreateAnother() {
+    reset();
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }
 
   const error =
@@ -108,6 +127,9 @@ export default function Home() {
             isConverting={isConverting}
             progress={progress}
             onConvert={handleConvert}
+            pdfBlob={pdfBlob}
+            onDownload={handleDownload}
+            onCreateAnother={handleCreateAnother}
           />
         )}
       </div>

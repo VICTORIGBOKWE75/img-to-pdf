@@ -5,9 +5,11 @@ import { useRef } from "react";
 import type { ImageItem } from "@/types/image";
 import type { PdfOptions } from "@/types/pdf";
 
-import { ImageGrid } from "./ImageGrid";
 import { ConvertButton } from "@/components/pdf/ConvertButton";
 import { PdfSettings } from "@/components/pdf/PdfSettings";
+import { PdfSuccess } from "@/components/pdf/PdfSuccess";
+
+import { ImageGrid } from "./ImageGrid";
 
 interface ImageWorkspaceProps {
   images: ImageItem[];
@@ -28,6 +30,10 @@ interface ImageWorkspaceProps {
   isConverting: boolean;
   progress: number;
   onConvert: () => void;
+
+  pdfBlob: Blob | null;
+  onDownload: () => void;
+  onCreateAnother: () => void;
 }
 
 export function ImageWorkspace({
@@ -42,6 +48,9 @@ export function ImageWorkspace({
   isConverting,
   progress,
   onConvert,
+  pdfBlob,
+  onDownload,
+  onCreateAnother,
 }: ImageWorkspaceProps) {
   const fileInputRef =
     useRef<HTMLInputElement>(null);
@@ -129,6 +138,14 @@ export function ImageWorkspace({
         disabled={images.length === 0}
         onClick={onConvert}
       />
+
+      {pdfBlob && !isConverting && (
+        <PdfSuccess
+          pdfBlob={pdfBlob}
+          onDownload={onDownload}
+          onCreateAnother={onCreateAnother}
+        />
+      )}
     </section>
   );
 }

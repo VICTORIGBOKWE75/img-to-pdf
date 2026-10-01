@@ -80,8 +80,8 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-background">
-      <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-        <header className="mx-auto max-w-2xl text-center">
+      <div className="mx-auto w-full max-w-6xl px-4 py-7 sm:px-6 sm:py-10 lg:px-8">
+        <header className="mx-auto max-w-2xl px-2 text-center">
           <p className="text-sm font-medium text-primary">
             Image → PDF
           </p>

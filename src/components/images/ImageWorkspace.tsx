@@ -77,7 +77,7 @@ export function ImageWorkspace({
     images.length === 1 ? "image" : "images";
 
   return (
-    <section className="mt-10">
+    <section className="mt-8 sm:mt-10">
       <input
         ref={fileInputRef}
         type="file"
@@ -87,7 +87,7 @@ export function ImageWorkspace({
         onChange={handleFileChange}
       />
 
-      <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-xl font-semibold">
             Images

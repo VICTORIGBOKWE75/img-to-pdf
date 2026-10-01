@@ -57,11 +57,11 @@ export function PdfSuccess({
           </p>
         </div>
 
-        <div className="flex flex-col gap-2 sm:flex-row">
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
           <button
             type="button"
             onClick={onDownload}
-            className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+            className="w-full rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90 sm:w-auto sm:px-5 sm:py-2.5"
           >
             Download PDF
           </button>
@@ -69,7 +69,7 @@ export function PdfSuccess({
           <button
             type="button"
             onClick={onCreateAnother}
-            className="rounded-lg border px-5 py-2.5 text-sm font-medium transition hover:bg-muted"
+            className="w-full rounded-lg border px-5 py-3 text-sm font-medium transition hover:bg-muted sm:w-auto sm:px-5 sm:py-2.5"
           >
             Create Another
           </button>

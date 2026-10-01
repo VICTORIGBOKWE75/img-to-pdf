@@ -1,12 +1,13 @@
 "use client";
 
 import {
-  closestCenter,
   DndContext,
-  type DragEndEvent,
+  closestCenter,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
+  type DragEndEvent,
 } from "@dnd-kit/core";
 
 import {
@@ -22,7 +23,10 @@ interface ImageGridProps {
   images: ImageItem[];
   onRotate: (id: string) => void;
   onRemove: (id: string) => void;
-  onReorder: (activeId: string, overId: string) => void;
+  onReorder: (
+    activeId: string,
+    overId: string
+  ) => void;
 }
 
 export function ImageGrid({
@@ -35,6 +39,13 @@ export function ImageGrid({
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
+      },
+    }),
+
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
       },
     })
   );
@@ -52,10 +63,6 @@ export function ImageGrid({
     );
   }
 
-  if (images.length === 0) {
-    return null;
-  }
-
   return (
     <DndContext
       sensors={sensors}
@@ -66,7 +73,7 @@ export function ImageGrid({
         items={images.map((image) => image.id)}
         strategy={rectSortingStrategy}
       >
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
           {images.map((image, index) => (
             <ImageCard
               key={image.id}

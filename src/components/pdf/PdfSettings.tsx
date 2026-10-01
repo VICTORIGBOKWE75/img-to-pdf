@@ -57,7 +57,7 @@ export function PdfSettings({
                     .value as PdfOptions["pageSize"],
               })
             }
-            className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-lg border bg-background px-3 py-3 text-base outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50 sm:py-2.5 sm:text-sm"
           >
             <option value="A4">
               A4
@@ -88,7 +88,7 @@ export function PdfSettings({
                     .value as PdfOptions["orientation"],
               })
             }
-            className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-lg border bg-background px-3 py-3 text-base outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50 sm:py-2.5 sm:text-sm"
           >
             <option value="portrait">
               Portrait
@@ -133,7 +133,7 @@ export function PdfSettings({
                   ),
                 });
               }}
-              className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full rounded-lg border bg-background px-3 py-3 text-base outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50 sm:py-2.5 sm:text-sm"
             />
 
             <span className="text-sm text-muted-foreground">
@@ -165,7 +165,7 @@ export function PdfSettings({
                     .value as PdfOptions["imageFit"],
               })
             }
-            className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-lg border bg-background px-3 py-3 text-base outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50 sm:py-2.5 sm:text-sm"
           >
             <option value="fit">
               Fit — show the whole image
@@ -196,7 +196,7 @@ export function PdfSettings({
                     .value as PdfOptions["quality"],
               })
             }
-            className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-lg border bg-background px-3 py-3 text-base outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50 sm:py-2.5 sm:text-sm"
           >
             <option value="small">
               Small — smaller PDF

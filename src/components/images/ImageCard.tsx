@@ -1,12 +1,12 @@
 "use client";
 
-import type { CSSProperties } from "react";
-
 import {
   useSortable,
 } from "@dnd-kit/sortable";
 
-import { CSS } from "@dnd-kit/utilities";
+import {
+  CSS,
+} from "@dnd-kit/utilities";
 
 import type { ImageItem } from "@/types/image";
 
@@ -15,6 +15,43 @@ interface ImageCardProps {
   index: number;
   onRotate: (id: string) => void;
   onRemove: (id: string) => void;
+}
+
+interface ActionButtonProps {
+  label: string;
+  onClick: () => void;
+  children: React.ReactNode;
+  destructive?: boolean;
+}
+
+function ActionButton({
+  label,
+  onClick,
+  children,
+  destructive = false,
+}: ActionButtonProps) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClick();
+      }}
+      className={[
+        "flex h-10 w-10 items-center justify-center rounded-lg",
+        "border bg-background/95 text-sm shadow-sm backdrop-blur",
+        "transition hover:bg-muted",
+        "active:scale-95",
+        destructive
+          ? "text-destructive hover:bg-destructive/10"
+          : "",
+      ].join(" ")}
+    >
+      {children}
+    </button>
+  );
 }
 
 export function ImageCard({
@@ -34,10 +71,12 @@ export function ImageCard({
     id: image.id,
   });
 
-  const style: CSSProperties = {
-    transform: CSS.Transform.toString(transform),
+  const style = {
+    transform: CSS.Transform.toString(
+      transform
+    ),
     transition,
-    zIndex: isDragging ? 10 : undefined,
+    touchAction: "pan-y",
   };
 
   return (
@@ -45,74 +84,70 @@ export function ImageCard({
       ref={setNodeRef}
       style={style}
       className={[
-        "group relative overflow-hidden rounded-xl border",
-        "bg-card shadow-sm",
+        "relative overflow-hidden rounded-xl border bg-card",
         isDragging
-          ? "opacity-60 shadow-lg"
-          : "opacity-100",
+          ? "z-10 opacity-60 shadow-xl"
+          : "shadow-sm",
       ].join(" ")}
     >
-      {/* Image number */}
-      <div className="absolute left-2 top-2 z-10 flex h-7 min-w-7 items-center justify-center rounded-full bg-black/70 px-2 text-xs font-medium text-white">
-        {index + 1}
-      </div>
-
-      {/* Drag handle */}
-      <button
-        type="button"
-        aria-label={`Drag ${image.name} to reorder`}
-        className="absolute right-2 top-2 z-10 flex h-8 w-8 cursor-grab items-center justify-center rounded-md bg-black/70 text-white transition hover:bg-black/80 active:cursor-grabbing"
+      <div
         {...attributes}
         {...listeners}
+        className="relative aspect-square cursor-grab touch-pan-y overflow-hidden bg-muted active:cursor-grabbing"
+        aria-label={`Drag image ${index + 1} to reorder`}
       >
-        <span aria-hidden="true">⠿</span>
-      </button>
-
-      {/* Image */}
-      <div className="aspect-square overflow-hidden bg-muted">
         <img
           src={image.previewUrl}
           alt={image.name}
-          className="h-full w-full object-contain transition-transform duration-200"
+          className="h-full w-full object-contain"
           style={{
             transform: `rotate(${image.rotation}deg)`,
           }}
+          draggable={false}
         />
+
+        <div className="absolute left-2 top-2 flex h-7 min-w-7 items-center justify-center rounded-full bg-background/90 px-2 text-xs font-semibold shadow-sm">
+          {index + 1}
+        </div>
+
+        <div
+          className="absolute bottom-2 right-2 flex gap-2"
+          onPointerDown={(event) =>
+            event.stopPropagation()
+          }
+        >
+          <ActionButton
+            label="Rotate image"
+            onClick={() =>
+              onRotate(image.id)
+            }
+          >
+            ↻
+          </ActionButton>
+
+          <ActionButton
+            label="Remove image"
+            onClick={() =>
+              onRemove(image.id)
+            }
+            destructive
+          >
+            ×
+          </ActionButton>
+        </div>
       </div>
 
-      {/* Information */}
-      <div className="p-3">
+      <div className="border-t px-3 py-2">
         <p
-          className="truncate text-sm font-medium"
+          className="truncate text-xs font-medium"
           title={image.name}
         >
           {image.name}
         </p>
 
-        <p className="mt-1 text-xs text-muted-foreground">
+        <p className="mt-0.5 text-xs text-muted-foreground">
           {image.width} × {image.height}
         </p>
-
-        {/* Actions */}
-        <div className="mt-3 flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => onRotate(image.id)}
-            className="flex-1 rounded-md border px-3 py-2 text-sm font-medium transition hover:bg-muted"
-            aria-label={`Rotate ${image.name}`}
-          >
-            ↻ Rotate
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onRemove(image.id)}
-            className="rounded-md border px-3 py-2 text-sm font-medium text-destructive transition hover:bg-destructive/10"
-            aria-label={`Delete ${image.name}`}
-          >
-            🗑
-          </button>
-        </div>
       </div>
     </article>
   );

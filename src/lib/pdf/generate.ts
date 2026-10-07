@@ -12,6 +12,7 @@ import type { ImageItem } from "@/types/image";
 import type { PdfOptions } from "@/types/pdf";
 
 import { processImage } from "@/lib/image/process";
+import { yieldToBrowser } from "@/lib/image/yieldToBrowser";
 
 import {
   getPageDimensions,
@@ -29,7 +30,8 @@ export interface PdfGenerationProgress {
   percentage: number;
 }
 
-interface GeneratePdfOptions extends PdfOptions {
+interface GeneratePdfOptions
+  extends PdfOptions {
   onProgress?: (
     progress: PdfGenerationProgress
   ) => void;
@@ -55,15 +57,45 @@ async function embedImage(
   pdf: PDFDocument,
   blob: Blob
 ): Promise<PDFImage> {
-  const bytes = new Uint8Array(
-    await blob.arrayBuffer()
-  );
+  const bytes =
+    new Uint8Array(
+      await blob.arrayBuffer()
+    );
 
   if (blob.type === "image/png") {
     return pdf.embedPng(bytes);
   }
 
-  return pdf.embedJpg(bytes);
+  if (blob.type === "image/jpeg") {
+    return pdf.embedJpg(bytes);
+  }
+
+  throw new Error(
+    `Unsupported processed image format: ${blob.type}`
+  );
+}
+
+function validatePdfOptions(
+  options: PdfOptions
+): void {
+  if (
+    !Number.isFinite(
+      options.margin
+    )
+  ) {
+    throw new Error(
+      "The PDF margin is invalid."
+    );
+  }
+
+  if (
+    options.margin < 0 ||
+    options.margin > 30
+  ) {
+    throw new Error(
+      "The PDF margin must be between 0 and 30 mm."
+    );
+  }
 }
 
 export async function generatePdf(
@@ -76,18 +108,24 @@ export async function generatePdf(
     );
   }
 
-  const pdf = await PDFDocument.create();
+  validatePdfOptions(options);
 
-  const pageDimensions = getPageDimensions(
-    options.pageSize,
-    options.orientation
-  );
+  const pdf =
+    await PDFDocument.create();
 
-  const margin = mmToPoints(options.margin);
+  const pageDimensions =
+    getPageDimensions(
+      options.pageSize,
+      options.orientation
+    );
 
-  const quality = getProcessingQuality(
-    options.quality
-  );
+  const margin =
+    mmToPoints(options.margin);
+
+  const quality =
+    getProcessingQuality(
+      options.quality
+    );
 
   const total = images.length;
 
@@ -104,85 +142,129 @@ export async function generatePdf(
   ) {
     const image = images[index];
 
-    const processed = await processImage(
-      image.file,
-      {
-        rotation: image.rotation,
-        outputType: "image/jpeg",
-        quality,
+    try {
+      const processed =
+        await processImage(
+          image.file,
+          {
+            rotation:
+              image.rotation,
+            outputType:
+              "image/jpeg",
+            quality,
+          }
+        );
+
+      const embeddedImage =
+        await embedImage(
+          pdf,
+          processed.blob
+        );
+
+      const page =
+        pdf.addPage([
+          pageDimensions.width,
+          pageDimensions.height,
+        ]);
+
+      const layout =
+        calculateImageLayout(
+          pageDimensions,
+          {
+            width:
+              embeddedImage.width,
+            height:
+              embeddedImage.height,
+          },
+          margin,
+          options.imageFit
+        );
+
+      if (
+        options.imageFit ===
+        "fill"
+      ) {
+        const contentArea =
+          getContentArea(
+            pageDimensions,
+            margin
+          );
+
+        page.pushOperators(
+          pushGraphicsState(),
+          rectangle(
+            contentArea.x,
+            contentArea.y,
+            contentArea.width,
+            contentArea.height
+          ),
+          clip(),
+          endPath()
+        );
       }
-    );
 
-    const embeddedImage = await embedImage(
-      pdf,
-      processed.blob
-    );
-
-    const page = pdf.addPage([
-      pageDimensions.width,
-      pageDimensions.height,
-    ]);
-
-    const layout = calculateImageLayout(
-      pageDimensions,
-      {
-        width: embeddedImage.width,
-        height: embeddedImage.height,
-      },
-      margin,
-      options.imageFit
-    );
-
-    if (options.imageFit === "fill") {
-      const contentArea = getContentArea(
-        pageDimensions,
-        margin
+      page.drawImage(
+        embeddedImage,
+        {
+          x: layout.x,
+          y: layout.y,
+          width: layout.width,
+          height: layout.height,
+        }
       );
 
-      page.pushOperators(
-        pushGraphicsState(),
-        rectangle(
-          contentArea.x,
-          contentArea.y,
-          contentArea.width,
-          contentArea.height
+      if (
+        options.imageFit ===
+        "fill"
+      ) {
+        page.pushOperators(
+          popGraphicsState()
+        );
+      }
+
+      const current =
+        index + 1;
+
+      options.onProgress?.({
+        current,
+        total,
+        percentage: Math.round(
+          (current / total) * 100
         ),
-        clip(),
-        endPath()
+      });
+
+      /*
+       * Give the browser a chance to
+       * process input, paint progress,
+       * and perform garbage collection
+       * between images.
+       */
+      if (
+        current < total
+      ) {
+        await yieldToBrowser();
+      }
+    } catch (error) {
+      const filename =
+        image.name ||
+        `image ${index + 1}`;
+
+      throw new Error(
+        `Could not process "${filename}". ${
+          error instanceof Error
+            ? error.message
+            : "Please try another image."
+        }`
       );
     }
-
-    page.drawImage(embeddedImage, {
-      x: layout.x,
-      y: layout.y,
-      width: layout.width,
-      height: layout.height,
-    });
-
-    if (options.imageFit === "fill") {
-      page.pushOperators(popGraphicsState());
-    }
-
-    const current = index + 1;
-
-    options.onProgress?.({
-      current,
-      total,
-      percentage: Math.round(
-        (current / total) * 100
-      ),
-    });
   }
 
-  const pdfBytes = await pdf.save();
+const pdfBytes = await pdf.save();
 
-  const pdfBuffer = new ArrayBuffer(
-    pdfBytes.byteLength
-  );
+const pdfBuffer = new ArrayBuffer(pdfBytes.byteLength);
+new Uint8Array(pdfBuffer).set(pdfBytes);
 
-  new Uint8Array(pdfBuffer).set(pdfBytes);
-
-  return new Blob([pdfBuffer], {
-    type: "application/pdf",
-  });
+return new Blob([pdfBuffer], {
+  type: "application/pdf",
+});
 }

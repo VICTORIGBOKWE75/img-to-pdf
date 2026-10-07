@@ -15,7 +15,7 @@ export function FilePicker({
 }: FilePickerProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  function openFilePicker() {    
+  function openFilePicker() {
     if (disabled) {
       return;
     }

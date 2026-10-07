@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useRef } from "react";
+import { useId } from "react";
 
 import type { ImageItem } from "@/types/image";
 import type { PdfOptions } from "@/types/pdf";
@@ -52,12 +53,7 @@ export function ImageWorkspace({
   onDownload,
   onCreateAnother,
 }: ImageWorkspaceProps) {
-  const fileInputRef =
-    useRef<HTMLInputElement>(null);
-
-  function openFilePicker() {
-    fileInputRef.current?.click();
-  }
+  const inputId = useId();
 
   function handleFileChange(
     event: React.ChangeEvent<HTMLInputElement>
@@ -70,6 +66,7 @@ export function ImageWorkspace({
 
     onFilesSelected(Array.from(files));
 
+    // Allows selecting the same file again later.
     event.target.value = "";
   }
 
@@ -79,12 +76,13 @@ export function ImageWorkspace({
   return (
     <section className="mt-8 sm:mt-10">
       <input
-        ref={fileInputRef}
+        id={inputId}
         type="file"
         accept="image/jpeg,image/png,image/webp"
         multiple
-        hidden
+        className="sr-only"
         onChange={handleFileChange}
+        disabled={isConverting}
       />
 
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -99,14 +97,18 @@ export function ImageWorkspace({
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={openFilePicker}
-            disabled={isConverting}
-            className="rounded-lg border px-4 py-2 text-sm font-medium transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+          <label
+            htmlFor={inputId}
+            className={[
+              "rounded-lg border px-4 py-2",
+              "text-sm font-medium transition",
+              isConverting
+                ? "cursor-not-allowed opacity-50"
+                : "cursor-pointer hover:bg-muted",
+            ].join(" ")}
           >
             + Add Images
-          </button>
+          </label>
 
           <button
             type="button"

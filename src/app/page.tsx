@@ -78,6 +78,12 @@ export default function Home() {
   const error =
     imageError ?? pdfError;
 
+  console.log(
+  "[Home] images:",
+  images.length,
+  images.map((image) => image.name)
+);
+
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto w-full max-w-6xl px-4 py-7 sm:px-6 sm:py-10 lg:px-8">

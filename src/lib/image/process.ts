@@ -18,8 +18,11 @@ import {
   type ImageRotation,
 } from "./rotate";
 
-export const MAX_OUTPUT_WIDTH = 4096;
-export const MAX_OUTPUT_HEIGHT = 4096;
+export const MAX_OUTPUT_WIDTH =
+  4096;
+
+export const MAX_OUTPUT_HEIGHT =
+  4096;
 
 export interface ProcessImageOptions {
   rotation?: ImageRotation;
@@ -40,7 +43,11 @@ function combineRotations(
   exifRotation: ImageRotation,
   userRotation: ImageRotation
 ): ImageRotation {
-  return ((exifRotation + userRotation) % 360) as ImageRotation;
+  return (
+    (exifRotation +
+      userRotation) %
+    360
+  ) as ImageRotation;
 }
 
 export async function processImage(
@@ -55,77 +62,118 @@ export async function processImage(
     maxHeight = MAX_OUTPUT_HEIGHT,
   } = options;
 
-  const [{ image, width, height }, exifRotation] =
-    await Promise.all([
-      decodeImage(file),
-      getExifRotation(file),
-    ]);
-
-  const rotation = combineRotations(
+  const [
+    { image, width, height },
     exifRotation,
-    userRotation
-  );
+  ] = await Promise.all([
+    decodeImage(file),
+    getExifRotation(file),
+  ]);
 
-  const rotatedDimensions = getRotatedDimensions(
-    { width, height },
-    rotation
-  );
+  const rotation =
+    combineRotations(
+      exifRotation,
+      userRotation
+    );
 
-  const outputDimensions = calculateResizedDimensions(
-    rotatedDimensions.width,
-    rotatedDimensions.height,
-    {
-      maxWidth,
-      maxHeight,
-    }
-  );
+  const rotatedDimensions =
+    getRotatedDimensions(
+      {
+        width,
+        height,
+      },
+      rotation
+    );
 
-  const canvas = document.createElement("canvas");
+  const outputDimensions =
+    calculateResizedDimensions(
+      rotatedDimensions.width,
+      rotatedDimensions.height,
+      {
+        maxWidth,
+        maxHeight,
+      }
+    );
 
-  canvas.width = outputDimensions.width;
-  canvas.height = outputDimensions.height;
+  const canvas =
+    document.createElement("canvas");
 
-  const context = canvas.getContext("2d");
+  canvas.width =
+    outputDimensions.width;
+
+  canvas.height =
+    outputDimensions.height;
+
+  const context =
+    canvas.getContext("2d");
 
   if (!context) {
-    throw new Error("Canvas is not supported.");
+    throw new Error(
+      "Canvas is not supported by this browser."
+    );
   }
 
-  context.imageSmoothingEnabled = true;
-  context.imageSmoothingQuality = "high";
+  context.imageSmoothingEnabled =
+    true;
+
+  context.imageSmoothingQuality =
+    "high";
 
   const scaleX =
-    outputDimensions.width / rotatedDimensions.width;
+    outputDimensions.width /
+    rotatedDimensions.width;
 
   const scaleY =
-    outputDimensions.height / rotatedDimensions.height;
+    outputDimensions.height /
+    rotatedDimensions.height;
 
   context.save();
 
-  context.scale(scaleX, scaleY);
+  try {
+    context.scale(
+      scaleX,
+      scaleY
+    );
 
-  drawRotatedImage(
-    context,
-    image,
-    width,
-    height,
-    rotation
-  );
+    drawRotatedImage(
+      context,
+      image,
+      width,
+      height,
+      rotation
+    );
+  } finally {
+    context.restore();
+  }
 
-  context.restore();
+  try {
+    const blob =
+      await canvasToBlob(
+        canvas,
+        {
+          type: outputType,
+          quality:
+            outputType ===
+            "image/png"
+              ? undefined
+              : quality,
+        }
+      );
 
-  const blob = await canvasToBlob(canvas, {
-    type: outputType,
-    quality:
-      outputType === "image/png"
-        ? undefined
-        : quality,
-  });
-
-  return {
-    blob,
-    width: outputDimensions.width,
-    height: outputDimensions.height,
-    type: blob.type,
-  };
+    return {
+      blob,
+      width:
+        outputDimensions.width,
+      height:
+        outputDimensions.height,
+      type: blob.type,
+    };
+  } finally {
+    /*
+     * Release the canvas backing store
+     * as soon as encoding is complete.
+     */
+    canvas.width = 1;
+    canvas.height = 1;
+  }
 }

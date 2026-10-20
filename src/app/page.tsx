@@ -80,8 +80,8 @@ export default function Home() {
 
   console.log(
   "[Home] images:",
-  images.length,
-  images.map((image) => image.name)
+  // images.length,
+  // images.map((image) => image.name)
 );
 
   return (

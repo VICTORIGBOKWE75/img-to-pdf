@@ -1,0 +1,32 @@
+
+> image-to-pdf@0.1.0 build
+> next build
+
+▲ Next.js 16.3.6 (Turbopack)
+⚠ Warning: Next.js ignored pnpm-lock.yaml in C:\Users\User because it is outside the current Git repository (C:\Users\User\Desktop\Vhector-projects\IMG-Converter\image-to-pdf).
+ To use this directory, set `turbopack.root` in your Next.js config.
+
+✓ Running next.config.ts took 102ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 67s
+  Running TypeScript ...
+  Finished TypeScript in 13.7s ...
+  Collecting page data using 3 workers ...
+  Generating static pages using 3 workers (0/4) ...
+Couldn't load fs
+Couldn't load zlib
+[Home] images: 0 []
+  Generating static pages using 3 workers (1/4) 
+  Generating static pages using 3 workers (2/4) 
+  Generating static pages using 3 workers (3/4) 
+✓ Generating static pages using 3 workers (4/4) in 480ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+└ ○ /_not-found
+
+
+○  (Static)  prerendered as static content
+

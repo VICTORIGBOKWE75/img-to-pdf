@@ -78,11 +78,7 @@ export default function Home() {
   const error =
     imageError ?? pdfError;
 
-  console.log(
-  "[Home] images:",
-  // images.length,
-  // images.map((image) => image.name)
-);
+ 
 
   return (
     <main className="min-h-screen bg-background">

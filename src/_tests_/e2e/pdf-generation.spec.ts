@@ -129,68 +129,8 @@ test.describe("PDF generation", () => {
   });
 
   
-test("uploads an image and generates a PDF", async ({ page }) => {
-  page.on("console", (message) => {
-    console.log(`[browser:${message.type()}] ${message.text()}`);
-  });
 
-  page.on("pageerror", (error) => {
-    console.log(`[pageerror] ${error.message}`);
-  });
-
-  page.on("requestfailed", (request) => {
-    console.log(
-      `[requestfailed] ${request.url()} — ${request.failure()?.errorText}`
-    );
-  });
-
-  await page.goto("/");
-
-  const fileInputs = page.locator('input[type="file"]');
-  console.log("File input count:", await fileInputs.count());
-
-  for (let i = 0; i < await fileInputs.count(); i++) {
-    console.log(`Input ${i}:`, await fileInputs.nth(i).evaluate((el) => ({
-      accept: (el as HTMLInputElement).accept,
-      multiple: (el as HTMLInputElement).multiple,
-      disabled: (el as HTMLInputElement).disabled,
-    })));
-  }
-
-  const fileInput = fileInputs.first();
-
-  await fileInput.setInputFiles({
-    name: "test-image.png",
-    mimeType: "image/png",
-    buffer: TEST_PNG,
-  });
-
-  console.log(
-    "Files assigned:",
-    await fileInput.evaluate((el) =>
-      Array.from((el as HTMLInputElement).files ?? []).map((file) => ({
-        name: file.name,
-        type: file.type,
-        size: file.size,
-      }))
-    )
-  );
-
-  await page.waitForTimeout(1500);
-  await page.screenshot({
-    path: "test-results/upload-debug.png",
-    fullPage: true,
-  });
-
-  console.log("Page after upload:", await page.locator("body").innerText());
-
-  await expect(page.getByText("test-image.png")).toBeVisible({
-    timeout: 5000,
-  });
-});
-
-
-  test("generates and downloads the PDF", async ({
+  test("uploads an image and displays it in the workspace", async ({
     page,
   }) => {
     await page.goto("/");
@@ -200,45 +140,267 @@ test("uploads an image and generates a PDF", async ({ page }) => {
     );
 
     await fileInput.setInputFiles({
+      name: "test-image.png",
+      mimeType: "image/png",
+      buffer: TEST_PNG,
+    });
+
+    await expect(
+      page.getByText("test-image.png")
+    ).toBeVisible({
+      timeout: 10_000,
+    });
+
+    await expect(
+      page.getByText("1 image selected")
+    ).toBeVisible();
+  });
+
+
+  
+  test("generates and downloads a valid one-page PDF", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    const fileInput = page.locator('input[type="file"]');
+
+    await fileInput.setInputFiles({
       name: "download-test.png",
       mimeType: "image/png",
       buffer: TEST_PNG,
     });
 
-    const convertButton =
-      page.getByRole("button", {
-        name: /convert|create pdf/i,
-      });
-
-    await expect(
-      convertButton
-    ).toBeVisible({
-      timeout: 10_000,
+    const convertButton = page.getByRole("button", {
+      name: /convert|create pdf/i,
     });
 
+    await expect(convertButton).toBeVisible({ timeout: 10_000 });
     await convertButton.click();
 
-    const downloadButton =
-      page.getByRole("button", {
-        name: /download pdf/i,
-      });
+    const downloadButton = page.getByRole("button", {
+      name: /download pdf/i,
+    });
+
+    await expect(downloadButton).toBeVisible({ timeout: 30_000 });
+
+    const downloadPromise = page.waitForEvent("download");
+    await downloadButton.click();
+
+    const download = await downloadPromise;
+
+    expect(download.suggestedFilename()).toMatch(/\.pdf$/i);
+
+    const filePath = await download.path();
+    expect(filePath).not.toBeNull();
+
+    const { readFile } = await import("node:fs/promises");
+    const pdfBytes = await readFile(filePath!);
+
+    // A PDF file begins with the "%PDF-" signature.
+    expect(pdfBytes.subarray(0, 5).toString("ascii")).toBe("%PDF-");
+
+    const { PDFDocument } = await import("pdf-lib");
+    const pdf = await PDFDocument.load(pdfBytes);
+
+    expect(pdf.getPageCount()).toBe(1);
+  });
+
+
+  
+  test("uploads multiple images and supports rotation and removal", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    const fileInput = page.locator('input[type="file"]');
+
+    await fileInput.setInputFiles([
+      {
+        name: "image-one.png",
+        mimeType: "image/png",
+        buffer: TEST_PNG,
+      },
+      {
+        name: "image-two.png",
+        mimeType: "image/png",
+        buffer: TEST_PNG,
+      },
+    ]);
 
     await expect(
-      downloadButton
-    ).toBeVisible({
+      page.getByText("2 images selected")
+    ).toBeVisible();
+
+    await expect(
+      page.getByAltText("image-one.png")
+    ).toBeVisible();
+
+    await expect(
+      page.getByAltText("image-two.png")
+    ).toBeVisible();
+
+    // Rotate the first image and verify its displayed rotation.
+    await page
+      .getByRole("button", { name: "Rotate image" })
+      .first()
+      .click();
+
+    await expect(
+      page.getByAltText("image-one.png")
+    ).toHaveAttribute("style", /rotate\(90deg\)/);
+
+    // Remove the second image.
+    await page
+      .getByRole("button", { name: "Remove image" })
+      .nth(1)
+      .click();
+
+    await expect(
+      page.getByText("1 image selected")
+    ).toBeVisible();
+
+    await expect(
+      page.getByAltText("image-two.png")
+    ).not.toBeVisible();
+
+    await expect(
+      page.getByAltText("image-one.png")
+    ).toBeVisible();
+  });
+
+  
+  test("updates PDF settings and preserves the selected values", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    const fileInput = page.locator('input[type="file"]');
+
+        await fileInput.setInputFiles({
+        name: "settings-test.png",
+        mimeType: "image/png",
+        buffer: TEST_PNG,
+      });
+
+    await expect(page.getByAltText("settings-test.png")).toBeVisible();
+
+    const pageSize = page.locator("#pdf-page-size");
+    const orientation = page.locator("#pdf-orientation");
+    const margin = page.locator("#pdf-margin");
+    const imageFit = page.locator("#pdf-image-fit");
+    const quality = page.locator("#pdf-quality");
+    await pageSize.selectOption("LETTER");
+    await orientation.selectOption("landscape");
+    await margin.fill("15");
+    await imageFit.selectOption("fill");
+    await quality.selectOption("high");
+
+    await expect(pageSize).toHaveValue("LETTER");
+    await expect(orientation).toHaveValue("landscape");
+    await expect(margin).toHaveValue("15");
+    await expect(imageFit).toHaveValue("fill");
+    await expect(quality).toHaveValue("high");
+  });
+
+  
+  test("generates a two-page PDF from two images", async ({ page }) => {
+    await page.goto("/");
+
+    const fileInput = page.locator('input[type="file"]');
+
+    await fileInput.setInputFiles([
+      {
+        name: "page-one.png",
+        mimeType: "image/png",
+        buffer: TEST_PNG,
+      },
+      {
+        name: "page-two.png",
+        mimeType: "image/png",
+        buffer: TEST_PNG,
+      },
+    ]);
+
+    await expect(page.getByText("2 images selected")).toBeVisible();
+
+    const convertButton = page.getByRole("button", {
+      name: /convert|create pdf/i,
+    });
+
+    await expect(convertButton).toBeVisible({ timeout: 10_000 });
+    await convertButton.click();
+
+    const downloadButton = page.getByRole("button", {
+      name: /download pdf/i,
+    });
+
+    await expect(downloadButton).toBeVisible({ timeout: 30_000 });
+
+    const downloadPromise = page.waitForEvent("download");
+    await downloadButton.click();
+
+    const download = await downloadPromise;
+    const filePath = await download.path();
+
+    expect(filePath).not.toBeNull();
+
+    const { readFile } = await import("node:fs/promises");
+    const pdfBytes = await readFile(filePath!);
+    const { PDFDocument } = await import("pdf-lib");
+    const pdf = await PDFDocument.load(pdfBytes);
+
+    expect(pdf.getPageCount()).toBe(2);
+  });
+
+
+  
+  
+  test("enforces the 30-image limit", async ({ page }) => {
+    await page.goto("/");
+
+    // The initial upload screen has the first file input.
+    await page.locator('input[type="file"]').setInputFiles(
+      Array.from({ length: 29 }, (_, index) => ({
+        name: `limit-test-${index + 1}.png`,
+        mimeType: "image/png",
+        buffer: TEST_PNG,
+      }))
+    );
+
+    await expect(page.getByText("29 images selected")).toBeVisible({
       timeout: 30_000,
     });
 
-    const downloadPromise =
-      page.waitForEvent("download");
+    // Re-query after the workspace has mounted.
+    await page.locator('input[type="file"]').setInputFiles([
+      {
+        name: "limit-test-30.png",
+        mimeType: "image/png",
+        buffer: TEST_PNG,
+      },
+      {
+        name: "limit-test-31.png",
+        mimeType: "image/png",
+        buffer: TEST_PNG,
+      },
+    ]);
 
-    await downloadButton.click();
+    await expect(page.getByText("30 images selected")).toBeVisible({
+      timeout: 30_000,
+    });
 
-    const download =
-      await downloadPromise;
+    await expect(
+      page.getByText("1 image could not be added.")
+    ).toBeVisible();
 
-    expect(
-      download.suggestedFilename()
-    ).toMatch(/\.pdf$/i);
+    await expect(
+      page.locator('button[aria-label="Remove image"]')
+    ).toHaveCount(30);
   });
+
+
+
+
+
 });

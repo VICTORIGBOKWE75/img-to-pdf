@@ -51,9 +51,14 @@ export function validateImageDimensions(
   width: number,
   height: number
 ): string | null {
-  if (width <= 0 || height <= 0) {
+  if (
+    !Number.isFinite(width) ||
+    !Number.isFinite(height) ||
+    width <= 0 ||
+    height <= 0
+  ) {
     return "Image dimensions are invalid.";
-  }
+}
 
   if (
     width > MAX_IMAGE_DIMENSION ||

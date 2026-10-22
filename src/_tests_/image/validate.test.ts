@@ -109,6 +109,20 @@ describe("validateImageDimensions", () => {
     ).toContain("invalid");
   });
 
+  it("rejects non-finite dimensions", () => {
+    expect(
+      validateImageDimensions(Number.NaN, 100)
+    ).toContain("invalid");
+
+    expect(
+      validateImageDimensions(100, Number.NaN)
+    ).toContain("invalid");
+
+    expect(
+      validateImageDimensions(Number.POSITIVE_INFINITY, 100)
+    ).toContain("invalid");
+  });
+
   it("rejects dimensions above the maximum", () => {
     expect(
       validateImageDimensions(

@@ -1,3 +1,4 @@
+
 "use client";
 
 interface PdfSuccessProps {
@@ -61,7 +62,14 @@ export function PdfSuccess({
           <button
             type="button"
             onClick={onDownload}
-            className="w-full rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90 sm:w-auto sm:px-5 sm:py-2.5"
+            className={[
+              "w-full rounded-lg bg-primary px-5 py-3",
+              "text-sm font-semibold text-primary-foreground",
+              "transition hover:opacity-90",
+              "focus-visible:outline-none focus-visible:ring-2",
+              "focus-visible:ring-ring focus-visible:ring-offset-2",
+              "sm:w-auto sm:px-5 sm:py-2.5",
+            ].join(" ")}
           >
             Download PDF
           </button>
@@ -69,7 +77,13 @@ export function PdfSuccess({
           <button
             type="button"
             onClick={onCreateAnother}
-            className="w-full rounded-lg border px-5 py-3 text-sm font-medium transition hover:bg-muted sm:w-auto sm:px-5 sm:py-2.5"
+            className={[
+              "w-full rounded-lg border px-5 py-3",
+              "text-sm font-medium transition hover:bg-muted",
+              "focus-visible:outline-none focus-visible:ring-2",
+              "focus-visible:ring-ring focus-visible:ring-offset-2",
+              "sm:w-auto sm:px-5 sm:py-2.5",
+            ].join(" ")}
           >
             Create Another
           </button>

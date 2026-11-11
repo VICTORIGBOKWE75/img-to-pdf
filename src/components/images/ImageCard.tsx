@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -44,6 +45,8 @@ function ActionButton({
         "border bg-background/95 text-sm shadow-sm backdrop-blur",
         "transition hover:bg-muted",
         "active:scale-95",
+        "focus-visible:outline-none focus-visible:ring-2",
+        "focus-visible:ring-ring focus-visible:ring-offset-2",
         destructive
           ? "text-destructive hover:bg-destructive/10"
           : "",
@@ -93,7 +96,12 @@ export function ImageCard({
       <div
         {...attributes}
         {...listeners}
-        className="relative aspect-square cursor-grab touch-pan-y overflow-hidden bg-muted active:cursor-grabbing"
+        className={[
+          "relative aspect-square cursor-grab touch-pan-y",
+          "overflow-hidden bg-muted active:cursor-grabbing",
+          "focus-visible:outline-none focus-visible:ring-2",
+          "focus-visible:ring-inset focus-visible:ring-ring",
+        ].join(" ")}
         aria-label={`Drag image ${index + 1} to reorder`}
       >
         <img

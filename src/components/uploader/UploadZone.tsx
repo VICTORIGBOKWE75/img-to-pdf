@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -68,6 +69,8 @@ export function UploadZone({
         "flex min-h-72 w-full flex-col items-center justify-center",
         "rounded-2xl border-2 border-dashed p-8",
         "transition-colors",
+        "focus-within:ring-2 focus-within:ring-ring",
+        "focus-within:ring-offset-2",
         isDragging
           ? "border-primary bg-primary/5"
           : "border-muted-foreground/25 bg-muted/20",

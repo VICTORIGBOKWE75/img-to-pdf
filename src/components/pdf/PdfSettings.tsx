@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { PdfOptions } from "@/types/pdf";
@@ -23,6 +24,15 @@ export function PdfSettings({
       ...changes,
     });
   }
+
+  const controlClassName = [
+    "w-full rounded-lg border bg-background",
+    "px-3 py-3 text-base outline-none",
+    "focus-visible:ring-2 focus-visible:ring-ring",
+    "focus-visible:ring-offset-2",
+    "disabled:cursor-not-allowed disabled:opacity-50",
+    "sm:py-2.5 sm:text-sm",
+  ].join(" ");
 
   return (
     <section className="mt-8 rounded-xl border bg-card p-5">
@@ -57,15 +67,10 @@ export function PdfSettings({
                     .value as PdfOptions["pageSize"],
               })
             }
-            className="w-full rounded-lg border bg-background px-3 py-3 text-base outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50 sm:py-2.5 sm:text-sm"
+            className={controlClassName}
           >
-            <option value="A4">
-              A4
-            </option>
-
-            <option value="LETTER">
-              Letter
-            </option>
+            <option value="A4">A4</option>
+            <option value="LETTER">Letter</option>
           </select>
         </div>
 
@@ -88,15 +93,10 @@ export function PdfSettings({
                     .value as PdfOptions["orientation"],
               })
             }
-            className="w-full rounded-lg border bg-background px-3 py-3 text-base outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50 sm:py-2.5 sm:text-sm"
+            className={controlClassName}
           >
-            <option value="portrait">
-              Portrait
-            </option>
-
-            <option value="landscape">
-              Landscape
-            </option>
+            <option value="portrait">Portrait</option>
+            <option value="landscape">Landscape</option>
           </select>
         </div>
 
@@ -133,7 +133,7 @@ export function PdfSettings({
                   ),
                 });
               }}
-              className="w-full rounded-lg border bg-background px-3 py-3 text-base outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50 sm:py-2.5 sm:text-sm"
+              className={controlClassName}
             />
 
             <span className="text-sm text-muted-foreground">
@@ -165,7 +165,7 @@ export function PdfSettings({
                     .value as PdfOptions["imageFit"],
               })
             }
-            className="w-full rounded-lg border bg-background px-3 py-3 text-base outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50 sm:py-2.5 sm:text-sm"
+            className={controlClassName}
           >
             <option value="fit">
               Fit — show the whole image
@@ -196,7 +196,7 @@ export function PdfSettings({
                     .value as PdfOptions["quality"],
               })
             }
-            className="w-full rounded-lg border bg-background px-3 py-3 text-base outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50 sm:py-2.5 sm:text-sm"
+            className={controlClassName}
           >
             <option value="small">
               Small — smaller PDF

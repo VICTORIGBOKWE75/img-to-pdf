@@ -80,7 +80,7 @@ export function ImageWorkspace({
         type="file"
         accept="image/jpeg,image/png,image/webp"
         multiple
-        className="sr-only"
+        className="sr-only peer"
         onChange={handleFileChange}
         disabled={isConverting}
       />
@@ -102,6 +102,8 @@ export function ImageWorkspace({
             className={[
               "rounded-lg border px-4 py-2",
               "text-sm font-medium transition",
+              "peer-focus-visible:outline-none peer-focus-visible:ring-2",
+              "peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2",
               isConverting
                 ? "cursor-not-allowed opacity-50"
                 : "cursor-pointer hover:bg-muted",
@@ -114,7 +116,13 @@ export function ImageWorkspace({
             type="button"
             onClick={onClear}
             disabled={isConverting}
-            className="rounded-lg border px-4 py-2 text-sm font-medium text-destructive transition hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-50"
+            className={[
+              "rounded-lg border px-4 py-2 text-sm font-medium",
+              "text-destructive transition hover:bg-destructive/10",
+              "focus-visible:outline-none focus-visible:ring-2",
+              "focus-visible:ring-ring focus-visible:ring-offset-2",
+              "disabled:cursor-not-allowed disabled:opacity-50",
+            ].join(" ")}
           >
             Clear All
           </button>

@@ -1,3 +1,4 @@
+
 "use client";
 
 interface ConvertButtonProps {
@@ -19,7 +20,15 @@ export function ConvertButton({
         type="button"
         onClick={onClick}
         disabled={disabled || isConverting}
-        className="w-full rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+        className={[
+          "w-full rounded-lg bg-primary px-5 py-3",
+          "text-sm font-semibold text-primary-foreground",
+          "transition hover:opacity-90",
+          "focus-visible:outline-none focus-visible:ring-2",
+          "focus-visible:ring-ring focus-visible:ring-offset-2",
+          "disabled:cursor-not-allowed disabled:opacity-50",
+          "sm:w-auto",
+        ].join(" ")}
       >
         {isConverting
           ? `Creating PDF… ${progress}%`
@@ -44,7 +53,12 @@ export function ConvertButton({
             />
           </div>
 
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p
+            className="mt-2 text-sm text-muted-foreground"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
             Processing your images locally…
           </p>
         </div>

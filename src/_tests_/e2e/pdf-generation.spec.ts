@@ -118,6 +118,8 @@ test.describe("PDF generation", () => {
     await expect(
       page.getByRole("heading", {
         name: "Convert images to PDF",
+        exact: true,
+        level: 1,
       })
     ).toBeVisible();
 

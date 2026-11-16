@@ -134,6 +134,78 @@ export default function Home() {
             onCreateAnother={handleCreateAnother}
           />
         )}
+
+
+        <section
+          aria-labelledby="about-converter"
+          className="mx-auto mt-16 max-w-3xl space-y-10 border-t pt-10"
+        >
+          <div>
+            <h2
+              id="about-converter"
+              className="text-2xl font-bold tracking-tight"
+            >
+              A simple way to convert images to PDF
+            </h2>
+
+            <p className="mt-4 leading-7 text-muted-foreground">
+              Combine multiple JPG, PNG, and WebP images
+              into a single PDF document. Arrange your
+              images, rotate them, customize your PDF
+              settings, and download the finished document
+              directly to your device.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-semibold">
+              How to convert images to PDF
+            </h2>
+
+            <ol className="mt-4 list-decimal space-y-3 pl-6 leading-7 text-muted-foreground">
+              <li>
+                Select images from your device or drag
+                and drop them into the upload area.
+              </li>
+              <li>
+                Arrange, rotate, or remove images as
+                needed and choose your PDF settings.
+              </li>
+              <li>
+                Click Convert to PDF and download your
+                completed document.
+              </li>
+            </ol>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-semibold">
+              Your privacy comes first
+            </h2>
+
+            <p className="mt-4 leading-7 text-muted-foreground">
+              Your images are processed directly in your
+              browser. They are not uploaded to a
+              conversion server, and you do not need an
+              account to use this tool. Your files remain
+              on your device.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-semibold">
+              Supported image formats
+            </h2>
+
+            <p className="mt-4 leading-7 text-muted-foreground">
+              Convert JPEG, JPG, PNG, and WebP images into
+              PDF. You can combine multiple images into
+              one document, with up to 30 images supported
+              per conversion.
+            </p>
+          </div>
+        </section>
+
       </div>
     </main>
   );

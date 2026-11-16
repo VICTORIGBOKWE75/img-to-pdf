@@ -44,12 +44,17 @@ export const metadata: Metadata = {
     description:
       "Convert multiple images into one PDF directly in your browser. Your images never leave your device.",
     siteName: "Image to PDF",
+    url: "https://img-to-pdf-wine.vercel.app",
   },
   twitter: {
     card: "summary",
     title: "Image to PDF | Free, Private & Easy",
     description:
       "Convert multiple images into one PDF directly in your browser. No uploads. No account required.",
+  },
+  metadataBase: new URL("https://img-to-pdf-wine.vercel.app"),
+    alternates: {
+    canonical: "/",
   },
 };
 
